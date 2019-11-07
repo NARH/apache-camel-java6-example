@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+   http://www.springframework.org/schema/beans/spring-beans.xsd
+   http://camel.apache.org/schema/spring
+   http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <camelContext xmlns="http://camel.apache.org/schema/spring">
+    <dataFormats>
+      <json id="jackson" library="Jackson"/>
+      <json id="pojo" library="Jackson" unmarshalTypeName="com.github.narh.test.SampleBean"/>
+    </dataFormats>
+
+    <route>
+      <from uri="direct:in"/>
+      <log message="LOG ---> ${body}" loggingLevel="INFO"/>
+      <marshal ref="jackson"/>
+      <log message="LOG ---> ${body}" loggingLevel="INFO"/>
+      <unmarshal ref="pojo"/>
+      <log message="LOG ---> ${body}" loggingLevel="INFO"/>
+      <to uri="mock:result"/>
+    </route>
+  </camelContext>
+</beans>
