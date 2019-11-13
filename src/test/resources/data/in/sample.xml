@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<root>
+    <samples>
+        <samples name="foo" value="100"/>
+        <samples name="bar" value="200"/>
+    </samples>
+</root>

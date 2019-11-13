@@ -2,12 +2,15 @@ package com.github.narh.test;
 
 import java.io.Serializable;
 
+import javax.xml.bind.annotation.XmlAttribute;
+
 public class SampleBean implements Serializable {
 
 	private String name;
 
 	private Integer value;
 
+  @XmlAttribute
 	public String getName() {
 		return name;
 	}
@@ -16,6 +19,7 @@ public class SampleBean implements Serializable {
 		this.name = name;
 	}
 
+  @XmlAttribute
 	public Integer getValue() {
 		return value;
 	}

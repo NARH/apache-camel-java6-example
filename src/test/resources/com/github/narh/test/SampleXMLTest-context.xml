@@ -8,18 +8,13 @@
    http://camel.apache.org/schema/spring
    http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-  <camelContext xmlns="http://camel.apache.org/schema/spring">
-    <dataFormats>
-      <json id="jackson" library="Jackson"/>
-      <json id="pojo" library="Jackson" unmarshalTypeName="com.github.narh.test.SampleBean"/>
-    </dataFormats>
+  <bean id="fileListProcessor" class="com.github.narh.test.FileListProcessor"/>
+  <bean id="root" class="com.github.narh.test.RootBean" scope="prototype"/>
 
+  <camelContext xmlns="http://camel.apache.org/schema/spring">
     <route>
-      <from uri="direct:in"/>
-      <log message="LOG ---> ${body}" loggingLevel="INFO"/>
-      <marshal ref="jackson"/>
-      <log message="LOG ---> ${body}" loggingLevel="INFO"/>
-      <unmarshal ref="pojo"/>
+      <from uri="file:src/test/resources/data/in?fileName=sample.xml&amp;noop=true"/>
+      <process ref="fileListProcessor"/>
       <log message="LOG ---> ${body}" loggingLevel="INFO"/>
       <to uri="mock:result"/>
     </route>
