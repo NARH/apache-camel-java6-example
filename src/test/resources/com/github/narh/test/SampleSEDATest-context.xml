@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+   http://www.springframework.org/schema/beans/spring-beans.xsd
+   http://camel.apache.org/schema/spring
+   http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <camelContext xmlns="http://camel.apache.org/schema/spring">
+    <route id="mainRoute">
+      <from uri="timer://run?delay=1000&amp;period=1000" />
+      <setBody>
+        <simple>${date:now:yyyy-MM-dd HH:mm:ss}</simple>
+      </setBody>
+      <loop>
+        <constant>10</constant>
+        <to uri="seda:seda_test" />
+      </loop>
+      <log message="seda_test end" />
+    </route>
+
+    <route id="consumerRoute">
+      <from uri="seda:seda_test?concurrentConsumers=5" />
+      <log message="${id} body -> ${body}" loggingLevel="INFO" />
+    </route>
+  </camelContext>
+ </beans>
