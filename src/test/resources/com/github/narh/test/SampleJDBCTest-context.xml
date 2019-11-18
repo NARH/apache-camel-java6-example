@@ -52,7 +52,7 @@
 
     <route id="consumerRoute">
       <from uri="seda:seda_test?concurrentConsumers=5" />
-      <setBody><simple>values '${body}'</simple></setBody>
+      <setBody><simple>update sample set text='${body}'</simple></setBody>
       <to uri="jdbc:dataSource"/>
       <to uri="log:sql??showHeaders=true"/>
     </route>

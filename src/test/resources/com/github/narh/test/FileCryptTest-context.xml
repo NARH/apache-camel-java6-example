@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="
+   http://www.springframework.org/schema/beans
+   http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+   http://www.springframework.org/schema/context
+   http://www.springframework.org/schema/context/spring-context-3.0.xsd
+   http://camel.apache.org/schema/spring
+   http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <bean id="aes128builder" class="com.github.narh.tool.crypt.Crypter$Builder">
+    <constructor-arg>
+    	<value type="com.github.narh.tool.crypt.Crypter$ALGORITHM">AES128</value>
+    </constructor-arg>
+	<property name="secretKey" value="12345678901234567890123456789012"/>
+	<property name="xorKey" value="1234567890"/>
+  </bean>
+  <bean id="aes256builder" class="com.github.narh.tool.crypt.Crypter$Builder">
+    <constructor-arg>
+    	<value type="com.github.narh.tool.crypt.Crypter$ALGORITHM">AES256</value>
+    </constructor-arg>
+	<property name="secretKey" value="12345678901234567890123456789012"/>
+	<property name="iv" value="0987654321098765"/>
+  </bean>
+  <bean id="aes128Crypter" name="aes128Crypter" class="com.github.narh.tool.crypt.Crypter" factory-bean="aes128builder" factory-method="build"/>
+  <bean id="aes256Crypter" name="aes256Crypter" class="com.github.narh.tool.crypt.Crypter" factory-bean="aes256builder" factory-method="build"/>
+  <bean id="cryptDataFormat" class="com.github.narh.tool.crypt.CryptDataFormat">
+	<property name="srcCrypter" ref="aes128Crypter"/>
+	<property name="destCrypter" ref="aes256Crypter"/>
+  </bean>
+  <bean id="myAggregateStrategy" class="com.github.narh.test.MyAggregateStrategy"/>
+
+  <camelContext xmlns="http://camel.apache.org/schema/spring">
+
+    <route>
+      <from uri="file:src/test/resources/data/in?noop=true" />
+      <removeHeaders pattern="*" excludePattern="CamelFileName"/>
+      <convertBodyTo type="java.lang.String"/>
+      <split streaming="true">
+        <tokenize token="\r\n|\n" xml="false" trim="true"/>
+        <log message="load ${body}"/>
+        <marshal ref="cryptDataFormat"/>
+        <to uri="log:marshal?showHeaders=true"/>
+        <to uri="seda:seda_test" />
+      </split>
+      <aggregate strategyRef="myAggregateStrategy" completionSize="1000">
+        <correlationExpression>
+          <constant>true</constant>
+        </correlationExpression>
+        <log message="aggregate: ${body}" />
+      </aggregate>
+    </route>
+    <route>
+      <from uri="seda:seda_test?concurrentConsumers=5" />
+      <transform><simple>${body}\r\n</simple></transform>
+      <to uri="log:seda?showHeaders=true"/>
+      <to uri="file:src/test/resources/data/out?fileExist=Append"/>
+      <to uri="log:file?showHeaders=true"/>
+    </route>
+
+  </camelContext>
+ </beans>

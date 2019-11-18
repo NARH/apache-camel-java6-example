@@ -1,5 +1,6 @@
 package com.github.narh.tool.crypt;
 
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +12,12 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Crypter {
+
+  Logger log = LoggerFactory.getLogger(getClass());
 
   /** アルゴリズム */
   private final ALGORITHM algorithm;
@@ -35,28 +41,58 @@ public class Crypter {
   }
 
   public static class Builder {
+    private static final String MS932 = "MS932";
     private final ALGORITHM algorithm;
-    private byte[] secretKey;
-    private byte[] iv;
-    private byte[] xorKey;
+    private String secretKey;
+    private String iv;
+    private String xorKey;
 
     public Builder(ALGORITHM algorithm) {
       this.algorithm = algorithm;
     }
 
-    public Crypter build() {
+    public Crypter build() throws UnsupportedEncodingException {
       assert secretKey != null : "Secret Key is null.";
+      assert 0 < secretKey.length() : "SecretKey length is zero.";
 
       if(algorithm.useXor) {
         assert xorKey != null : "XOR key is null.";
+        assert 0 < xorKey.length() : "XOR key length is zero.";
       }
 
-      if(algorithm.useIv ) {
+      if(algorithm.useIv) {
         assert iv != null : "IV Parameter is null.";
+        assert 0 < iv.length() : "IV Parameter length is zero.";
       }
-      return new Crypter(algorithm, new SecretKeySpec(secretKey, algorithm.algorithm)
-          , xorKey, new IvParameterSpec(iv));
+      return new Crypter(algorithm, new SecretKeySpec(secretKey.getBytes(MS932), "AES")
+          , (algorithm.useXor) ? xorKey.getBytes(MS932): null
+          , (algorithm.useIv)  ? new IvParameterSpec(iv.getBytes(MS932)) : null);
     }
+
+    public String getSecretKey() {
+      return secretKey;
+    }
+
+    public void setSecretKey(String secretKey) {
+      this.secretKey = secretKey;
+    }
+
+    public String getIv() {
+      return iv;
+    }
+
+    public void setIv(String iv) {
+      this.iv = iv;
+    }
+
+    public String getXorKey() {
+      return xorKey;
+    }
+
+    public void setXorKey(String xorKey) {
+      this.xorKey = xorKey;
+    }
+
   }
 
   protected Crypter(final ALGORITHM algorithm, SecretKeySpec secretkey
