@@ -67,12 +67,12 @@ public class Crypter {
     this.iv        = iv;
   }
 
-  public byte[] doEncrypt(final byte[] data)
+  public byte[] encrypt(final byte[] data)
       throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
     return (algorithm.useXor) ? doXorCrypt(doAESCrypt(Cipher.ENCRYPT_MODE, data)) : doAESCrypt(Cipher.ENCRYPT_MODE, data);
   }
 
-  public byte[] doDecrypt(final byte[] data)
+  public byte[] decrypt(final byte[] data)
       throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
     return (algorithm.useXor) ? doAESCrypt(Cipher.DECRYPT_MODE, doXorCrypt(data)) : doAESCrypt(Cipher.DECRYPT_MODE, data);
   }
@@ -91,7 +91,7 @@ public class Crypter {
   private byte[] doXorCrypt(final byte[] data) {
     byte[] result = new byte[data.length];
     for(int i = 0; i < data.length; i++) {
-      result[i] =(byte) (data[i] ^ xorKey[i%data.length]);
+      result[i] =(byte) (data[i] ^ xorKey[i%xorKey.length]);
     }
     return result;
   }
