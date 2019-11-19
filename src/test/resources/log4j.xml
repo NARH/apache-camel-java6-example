@@ -11,12 +11,12 @@
      </layout>
   </appender>
 
-  <category name="com.github.narh.tool.crypt">
+  <category name="com.github.narh.tool.crypt" additivity="false">
     <priority value="DEBUG"/>
     <appender-ref ref="STDOUT"/>
   </category>
 
-  <category name="com.github.narh.test">
+  <category name="com.github.narh.test" additivity="false">
     <priority value="DEBUG"/>
     <appender-ref ref="STDOUT"/>
   </category>

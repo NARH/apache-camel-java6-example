@@ -35,29 +35,15 @@
   <camelContext xmlns="http://camel.apache.org/schema/spring">
 
     <route>
-      <from uri="file:src/test/resources/data/in?noop=true" />
+      <from uri="file:src/test/resources/data/crypt/in?noop=true" />
       <removeHeaders pattern="*" excludePattern="CamelFileName"/>
       <convertBodyTo type="java.lang.String"/>
       <split streaming="true">
         <tokenize token="\r\n|\n" xml="false" trim="true"/>
-        <log message="load ${body}"/>
+        <to uri="log:split??showHeaders=true&amp;showProperties=true"/>
         <marshal ref="cryptDataFormat"/>
-        <to uri="log:marshal?showHeaders=true"/>
-        <to uri="seda:seda_test" />
+        <to uri="file:src/test/resources/data/out?fileExist=Append"/>
       </split>
-      <aggregate strategyRef="myAggregateStrategy" completionSize="1000">
-        <correlationExpression>
-          <constant>true</constant>
-        </correlationExpression>
-        <log message="aggregate: ${body}" />
-      </aggregate>
-    </route>
-    <route>
-      <from uri="seda:seda_test?concurrentConsumers=5" />
-      <transform><simple>${body}\r\n</simple></transform>
-      <to uri="log:seda?showHeaders=true"/>
-      <to uri="file:src/test/resources/data/out?fileExist=Append"/>
-      <to uri="log:file?showHeaders=true"/>
     </route>
 
   </camelContext>
